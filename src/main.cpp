@@ -268,12 +268,13 @@ int main(int argc, char **argv)
     RGBtoYIQ(currentImage,YIQimage);//Transforma la imagén a YIQ
     binarizeChannel(YIQimage,YIQ[0]-dsv,YIQ[0]+dsv,YIQ[1]-dsv,YIQ[1]+dsv,YIQ[2]-dsv,YIQ[2]+dsv,sepYIQ);//Binarisa sobre los valores en los que se dio click YIQ
 
-    restore(currentImage,sepYIQ,YIQrest); //Crea una imagen con los colores originales y la imagen binarizada
+    //restore(currentImage,sepYIQ,YIQrest); //Crea una imagen con los colores originales y la imagen binarizada
 
     imshow("Original", currentImage);
-    aux = display2v(YIQimage,sepYIQ);
-    aux1 = display2v(YIQrest,Mat (YIQrest.rows,YIQrest.cols,YIQrest.type(),Scalar(0,0,0)));
-    imshow("YIQ",display2(aux,aux1));
+    //aux = display2v(YIQimage,sepYIQ);
+    //aux1 = display2v(YIQrest,Mat (YIQrest.rows,YIQrest.cols,YIQrest.type(),Scalar(0,0,0)));
+    //imshow("YIQ",display2(aux,aux1));
+    imshow("YIQ",YIQimage);
 
 		for(int i=0; i<1000;i++)
 	{
@@ -286,7 +287,7 @@ int main(int argc, char **argv)
 	Mat binaryImage;
 	Mat auximage;
 	cvtColor( sepYIQ, auximage, CV_BGR2GRAY );
-	for ( int i = 1; i < 25; i = i + 8 ){ medianBlur ( auximage, auximage, i );}
+	for ( int i = 1; i < 13; i = i + 4 ){ medianBlur ( auximage, auximage, i );}
 	threshold( auximage, binaryImage, 120, 255,THRESH_BINARY );
 	Mat detectionimage = Mat(binaryImage.rows,binaryImage.cols,currentImage.type());
 	detectionimage.setTo(Scalar(0,0,0));
