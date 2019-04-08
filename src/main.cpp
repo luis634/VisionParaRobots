@@ -29,7 +29,14 @@ int const max_kernel_size = 21;
 int thresh = 100;
 int max_thresh = 255;
 int areas[100];
-float sumaX[100],sumaY[100];
+long double sumaX[100],sumaY[100];
+long double sumaXcuadrada[100], sumaYcuadrada[100];
+long double miu20[100], miu02[100], miu11[100];
+long double centrox[100], centroy[100];
+long double phi1[100],phi2[100];
+long double sumaXY[100];
+long double niu20[100],niu02[100],niu11[100];
+
 bool esta[1000][1000];
 void mouseCoordinatesExampleCallback(int event, int x, int y, int flags, void* param);
 void mouseCallbackYIQ(int event, int x, int y, int flags, void* param);
@@ -38,7 +45,7 @@ void restore(const Mat &sourceImage,const Mat &binImage, Mat &destinationImage);
 void binarizeChannel(const Mat &sourceImage, int blowValue, int bhighValue,int glowValue, int ghighValue,int rlowValue, int rhighValue, Mat &destinationImage);
 Mat display2(const Mat &mat_1, const Mat &mat_2);
 Mat display2v(const Mat &mat_1, const Mat &mat_2);
-int centrox, centroy = 0;
+
 
 vector<Point> points;//Se guardan los puntos donde se hace click
 int RGB[3];//Se guardan los valores BGR del punto donde se da click
@@ -99,7 +106,7 @@ void detectobject(Mat &sourceImage,Mat &destinationImage)
 {
 	int i,j;
 	int color[3]={30,30,30};
-	int aux4=0;
+	int aux=0;
 	//DATOS PARA LA ACCESAR A LAS IMAGENES
 	uint8_t* pixelPtr = (uint8_t*)sourceImage.data;
 	int cn = sourceImage.channels();
@@ -193,33 +200,87 @@ void detectobject(Mat &sourceImage,Mat &destinationImage)
 						}
 						}
 						ptr = ptr->next;
-						areas[aux4]++;
-						sumaX[aux4] = sumaX[aux4] + j;
-            sumaY[aux4] = sumaY[aux4] +i;
+
+						areas[aux]++;
+						sumaX[aux] = sumaX[aux] + j;
+            sumaY[aux] = sumaY[aux] + i;
+
+						sumaXY[aux] += j * i;
+						sumaXcuadrada[aux] = sumaXcuadrada[aux] + j * j ;
+						sumaYcuadrada[aux] = sumaYcuadrada[aux] + i * i;
+						
+						
 					}
 					obj.cleanLinkedList();
-					aux4++;
+
+					centrox[aux] = sumaX[aux]/areas[aux];
+					centroy[aux] = sumaY[aux]/areas[aux];
+					miu20[aux] = sumaXcuadrada[aux] - centrox[aux] * sumaX[aux];
+					miu02[aux] = sumaYcuadrada[aux] - centroy[aux] * sumaY[aux];
+					miu11[aux] = sumaXY[aux] - centroy[aux] * centrox[aux] * areas[aux];
+
+					niu20[aux] = miu20[aux]/pow(areas[aux],2);
+					niu02[aux] = miu02[aux]/pow(areas[aux],2);
+					niu11[aux] = miu11[aux]/pow(areas[aux],2);
+
+					phi1[aux] = niu20[aux] + niu02[aux];
+					phi2[aux] = pow(niu20[aux] - niu02[aux],2) + 4 *pow(niu11[aux],2);
+
+
+
+					aux++;
+
 					color[0] = color[0] + 10;
 					color[1] = color[1] + 40;
 					color[2] = color[2] + 60;
 				}
 			}
 		}
-		cout<<"numero de objetos = "<<aux4<<endl;
-		for(int i=0; i<aux4;i++)
+		cout<<"numero de objetos = "<<aux<<endl;
+		for(int i=0; i<aux;i++)
 		{
 
 			cout<<"objeto "<<i+1<<" = "<<areas[i]<<endl;
+			cout << "X: " <<i+1 << " = "<< sumaX[i] <<endl;
+			cout << "Y: " <<i+1 << " = "<< sumaY[i] <<endl;
       cout<<"x testada "<<i+1<<" = "<<sumaX[i]/areas[i]<<endl;
       cout<<"y testada "<<i+1<<" = "<<sumaY[i]/areas[i]<<endl;
-			centrox = sumaX[i]/areas[i];
-			centroy = sumaY[i]/areas[i];
-			Point p(centrox,centroy);
+			cout<<"miu20" <<i+1 <<" = "<< miu20[i]<<endl;
+			cout<<"miu02" <<i+1 <<" = "<< miu02[i]<<endl;
+			cout<<"miu11" <<i+1 <<" = "<< miu11[i]<<endl;
+			cout <<"phi1" <<i+1 << " = " << phi1[i] <<endl;
+			cout <<"phi2" <<i+1 << " = " << phi2[i] <<endl;
+	
+
+
+			
+
+			cout << "miu20 " << i+1 << " = "<< miu20[i] <<endl;
+
+			Point p(centrox[i],centroy[i]);
 			circle(destinationImage, p ,5, Scalar(128,0,0),-1);
 
       areas[i] = 0;
       sumaX[i] = 0;
       sumaY[i] = 0;
+			centrox[i] = 0;
+			centroy[i] = 0;
+			sumaXcuadrada[i] = 0;
+			sumaYcuadrada[i] = 0;
+			sumaXY[i] = 0;
+			miu20[i] = 0;
+
+					
+
+		    	miu02[i] = 0;
+					miu11[i] = 0;
+					phi1[i] = 0;
+					phi2[i] = 0;
+
+
+
+
+
 		}
     obj.cleanLinkedList();
 }
