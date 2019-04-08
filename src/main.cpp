@@ -208,8 +208,8 @@ void detectobject(Mat &sourceImage,Mat &destinationImage)
 						sumaXY[aux] += j * i;
 						sumaXcuadrada[aux] = sumaXcuadrada[aux] + j * j ;
 						sumaYcuadrada[aux] = sumaYcuadrada[aux] + i * i;
-						
-						
+
+
 					}
 					obj.cleanLinkedList();
 
@@ -250,10 +250,10 @@ void detectobject(Mat &sourceImage,Mat &destinationImage)
 			cout<<"miu11" <<i+1 <<" = "<< miu11[i]<<endl;
 			cout <<"phi1" <<i+1 << " = " << phi1[i] <<endl;
 			cout <<"phi2" <<i+1 << " = " << phi2[i] <<endl;
-	
 
 
-			
+      //prueba
+
 
 			cout << "miu20 " << i+1 << " = "<< miu20[i] <<endl;
 
@@ -270,7 +270,7 @@ void detectobject(Mat &sourceImage,Mat &destinationImage)
 			sumaXY[i] = 0;
 			miu20[i] = 0;
 
-					
+
 
 		    	miu02[i] = 0;
 					miu11[i] = 0;
