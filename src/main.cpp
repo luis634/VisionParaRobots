@@ -251,13 +251,15 @@ void detectobject(Mat &sourceImage,Mat &destinationImage)
 
 			Point p(centrox[i],centroy[i]);
 
-      corrimientoX = (areas[i]/1000)*cos(theta[i] * 180 / 3.14159265);
-      corrimientoY = (areas[i]/1000)*sin(theta[i] * 180 / 3.14159265);
+      corrimientoX = sqrt(areas[i])*cos(theta[i]);
+      corrimientoY = sqrt(areas[i])*sin(theta[i]);
 
-      Point a(centrox[i]+corrimientoX,centroy[i]-corrimientoY);
+      Point a(centrox[i]+corrimientoX,centroy[i]+corrimientoY);
 
 			circle(destinationImage, p ,5, Scalar(128,0,0),-1);
       circle(destinationImage, a ,5, Scalar(0,128,0),-1);
+      line(destinationImage,p,a,Scalar(128,128,128),1,1);
+
       areas[i] = 0;
       sumaX[i] = 0;
       sumaY[i] = 0;
@@ -348,9 +350,7 @@ int main(int argc, char **argv)
     }
   }
 	// im_in = imread("/home/diego96/Pictures/Webcam/prueba21.jpg", CV_LOAD_IMAGE_COLOR);
-
 }
-
 void RGBtoYIQ(const Mat &sourceImage, Mat &destinationImage)
 //Convierte de RGB a YIQ
 {
