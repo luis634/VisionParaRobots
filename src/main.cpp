@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string.h>
 #include <cmath>
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -29,6 +30,7 @@ int const max_kernel_size = 21;
 int thresh = 100;
 int max_thresh = 255;
 int areas[100];
+double corrimientoX,corrimientoY;
 long double sumaX[100],sumaY[100];
 long double sumaXcuadrada[100], sumaYcuadrada[100];
 long double miu20[100], miu02[100], miu11[100];
@@ -36,6 +38,7 @@ long double centrox[100], centroy[100];
 long double phi1[100],phi2[100];
 long double sumaXY[100];
 long double niu20[100],niu02[100],niu11[100];
+long double theta[100];
 
 bool esta[1000][1000];
 void mouseCoordinatesExampleCallback(int event, int x, int y, int flags, void* param);
@@ -99,7 +102,6 @@ class list
 
 		}
 };
-
 //////////////////###############END LINKED LIST#####################
 list obj;
 void detectobject(Mat &sourceImage,Mat &destinationImage)
@@ -143,9 +145,6 @@ void detectobject(Mat &sourceImage,Mat &destinationImage)
 						destinationImage.at<Vec3b>(Point(j, i))[0] = color[0];
 						destinationImage.at<Vec3b>(Point(j, i))[1] = color[1];
 						destinationImage.at<Vec3b>(Point(j, i))[2] = color[2];
-
-
-
 						if(i>0 && j>0 && i<(sourceImage.rows-1)&& j<(sourceImage.cols-1)){
 						//Input image i-1
 						bgrPixel.val[0] = pixelPtr[(i-1)*sourceImage.cols*cn + j*cn + 0];
@@ -155,61 +154,59 @@ void detectobject(Mat &sourceImage,Mat &destinationImage)
 						bgrPixel2.val[0] = pixelPtr2[(i-1)*destinationImage.cols*cn2 + j*cn2 + 0];
 						bgrPixel2.val[1] = pixelPtr2[(i-1)*destinationImage.cols*cn2 + j*cn2 + 1];
 						bgrPixel2.val[2] = pixelPtr2[(i-1)*destinationImage.cols*cn2 + j*cn2 + 2];
-						if (bgrPixel[0] == 255 && bgrPixel[1] == 255  && bgrPixel[2] == 255  && bgrPixel2.val[0] == 0 && bgrPixel2.val[1] == 0 && bgrPixel2.val[2] == 0 && esta[i-1][j])
-						{
-							obj.insert(i-1,j);
-							esta[i-1][j] = false;
-						}
-						//Input image i-1
-						bgrPixel.val[0] = pixelPtr[i*sourceImage.cols*cn + (j+1)*cn + 0];
-						bgrPixel.val[1] = pixelPtr[i*sourceImage.cols*cn + (j+1)*cn + 1];
-						bgrPixel.val[2] = pixelPtr[i*sourceImage.cols*cn + (j+1)*cn + 2];
-						//OutputImage
-						bgrPixel2.val[0] = pixelPtr2[i*destinationImage.cols*cn2 + (j+1)*cn2 + 0];
-						bgrPixel2.val[1] = pixelPtr2[i*destinationImage.cols*cn2 + (j+1)*cn2 + 1];
-						bgrPixel2.val[2] = pixelPtr2[i*destinationImage.cols*cn2 + (j+1)*cn2 + 2];
-						if (bgrPixel[0] == 255 && bgrPixel[1] == 255  && bgrPixel[2] == 255  && bgrPixel2.val[0] == 0 && bgrPixel2.val[1] == 0 && bgrPixel2.val[2] == 0 && esta[i][j+1])
-						{
-							obj.insert(i,j+1);
-							esta[i][j+1] = false;
-						}
-						//Input image i-1
-						bgrPixel.val[0] = pixelPtr[(i+1)*sourceImage.cols*cn + j*cn + 0];
-						bgrPixel.val[1] = pixelPtr[(i+1)*sourceImage.cols*cn + j*cn + 1];
-						bgrPixel.val[2] = pixelPtr[(i+1)*sourceImage.cols*cn + j*cn + 2];
-						//OutputImage
-						bgrPixel2.val[0] = pixelPtr2[(i+1)*destinationImage.cols*cn2 + j*cn2 + 0];
-						bgrPixel2.val[1] = pixelPtr2[(i+1)*destinationImage.cols*cn2 + j*cn2 + 1];
-						bgrPixel2.val[2] = pixelPtr2[(i+1)*destinationImage.cols*cn2 + j*cn2 + 2];
-						if (bgrPixel[0] == 255 && bgrPixel[1] == 255  && bgrPixel[2] == 255  && bgrPixel2.val[0] == 0 && bgrPixel2.val[1] == 0 && bgrPixel2.val[2] == 0 && esta[i+1][j])
-						{
-							obj.insert(i+1,j);
-							esta[i+1][j] = false;
-						}
-						bgrPixel.val[0] = pixelPtr[i*sourceImage.cols*cn + (j-1)*cn + 0];
-						bgrPixel.val[1] = pixelPtr[i*sourceImage.cols*cn + (j-1)*cn + 1];
-						bgrPixel.val[2] = pixelPtr[i*sourceImage.cols*cn + (j-1)*cn + 2];
-						//OutputImage
-						bgrPixel2.val[0] = pixelPtr2[i*destinationImage.cols*cn2 + (j-1)*cn2 + 0];
-						bgrPixel2.val[1] = pixelPtr2[i*destinationImage.cols*cn2 + (j-1)*cn2 + 1];
-						bgrPixel2.val[2] = pixelPtr2[i*destinationImage.cols*cn2 + (j-1)*cn2 + 2];
-                       if (bgrPixel[0] == 255 && bgrPixel[1] == 255  && bgrPixel[2] == 255  && bgrPixel2.val[0] == 0 && bgrPixel2.val[1] == 0 && bgrPixel2.val[2] == 0 && esta[i][j-1])
-						{
-							obj.insert(i,j-1);
-							esta[i][j-1] = false;
-						}
-						}
-						ptr = ptr->next;
+  						if (bgrPixel[0] == 255 && bgrPixel[1] == 255  && bgrPixel[2] == 255  && bgrPixel2.val[0] == 0 && bgrPixel2.val[1] == 0 && bgrPixel2.val[2] == 0 && esta[i-1][j])
+  						{
+  							obj.insert(i-1,j);
+  							esta[i-1][j] = false;
+  						}
+  						//Input image i-1
+  						bgrPixel.val[0] = pixelPtr[i*sourceImage.cols*cn + (j+1)*cn + 0];
+  						bgrPixel.val[1] = pixelPtr[i*sourceImage.cols*cn + (j+1)*cn + 1];
+  						bgrPixel.val[2] = pixelPtr[i*sourceImage.cols*cn + (j+1)*cn + 2];
+  						//OutputImage
+  						bgrPixel2.val[0] = pixelPtr2[i*destinationImage.cols*cn2 + (j+1)*cn2 + 0];
+  						bgrPixel2.val[1] = pixelPtr2[i*destinationImage.cols*cn2 + (j+1)*cn2 + 1];
+  						bgrPixel2.val[2] = pixelPtr2[i*destinationImage.cols*cn2 + (j+1)*cn2 + 2];
+  						if (bgrPixel[0] == 255 && bgrPixel[1] == 255  && bgrPixel[2] == 255  && bgrPixel2.val[0] == 0 && bgrPixel2.val[1] == 0 && bgrPixel2.val[2] == 0 && esta[i][j+1])
+  						{
+  							obj.insert(i,j+1);
+  							esta[i][j+1] = false;
+  						}
+  						//Input image i-1
+  						bgrPixel.val[0] = pixelPtr[(i+1)*sourceImage.cols*cn + j*cn + 0];
+  						bgrPixel.val[1] = pixelPtr[(i+1)*sourceImage.cols*cn + j*cn + 1];
+  						bgrPixel.val[2] = pixelPtr[(i+1)*sourceImage.cols*cn + j*cn + 2];
+  						//OutputImage
+  						bgrPixel2.val[0] = pixelPtr2[(i+1)*destinationImage.cols*cn2 + j*cn2 + 0];
+  						bgrPixel2.val[1] = pixelPtr2[(i+1)*destinationImage.cols*cn2 + j*cn2 + 1];
+  						bgrPixel2.val[2] = pixelPtr2[(i+1)*destinationImage.cols*cn2 + j*cn2 + 2];
+  						if (bgrPixel[0] == 255 && bgrPixel[1] == 255  && bgrPixel[2] == 255  && bgrPixel2.val[0] == 0 && bgrPixel2.val[1] == 0 && bgrPixel2.val[2] == 0 && esta[i+1][j])
+  						{
+  							obj.insert(i+1,j);
+  							esta[i+1][j] = false;
+  						}
+  						bgrPixel.val[0] = pixelPtr[i*sourceImage.cols*cn + (j-1)*cn + 0];
+  						bgrPixel.val[1] = pixelPtr[i*sourceImage.cols*cn + (j-1)*cn + 1];
+  						bgrPixel.val[2] = pixelPtr[i*sourceImage.cols*cn + (j-1)*cn + 2];
+  						//OutputImage
+  						bgrPixel2.val[0] = pixelPtr2[i*destinationImage.cols*cn2 + (j-1)*cn2 + 0];
+  						bgrPixel2.val[1] = pixelPtr2[i*destinationImage.cols*cn2 + (j-1)*cn2 + 1];
+  						bgrPixel2.val[2] = pixelPtr2[i*destinationImage.cols*cn2 + (j-1)*cn2 + 2];
+              if (bgrPixel[0] == 255 && bgrPixel[1] == 255  && bgrPixel[2] == 255  && bgrPixel2.val[0] == 0 && bgrPixel2.val[1] == 0 && bgrPixel2.val[2] == 0 && esta[i][j-1])
+  						{
+  							obj.insert(i,j-1);
+  							esta[i][j-1] = false;
+  						}
+					  }
+  					ptr = ptr->next;
 
-						areas[aux]++;
-						sumaX[aux] = sumaX[aux] + j;
+  					areas[aux]++;
+  					sumaX[aux] = sumaX[aux] + j;
             sumaY[aux] = sumaY[aux] + i;
 
-						sumaXY[aux] += j * i;
-						sumaXcuadrada[aux] = sumaXcuadrada[aux] + j * j ;
-						sumaYcuadrada[aux] = sumaYcuadrada[aux] + i * i;
-
-
+  					sumaXY[aux] += j * i;
+  					sumaXcuadrada[aux] = sumaXcuadrada[aux] + j * j ;
+  					sumaYcuadrada[aux] = sumaYcuadrada[aux] + i * i;
 					}
 					obj.cleanLinkedList();
 
@@ -226,8 +223,7 @@ void detectobject(Mat &sourceImage,Mat &destinationImage)
 					phi1[aux] = niu20[aux] + niu02[aux];
 					phi2[aux] = pow(niu20[aux] - niu02[aux],2) + 4 *pow(niu11[aux],2);
 
-
-
+          theta[aux] = 0.5 * atan((2*(niu11[aux]/areas[aux]))/(niu20[aux]/areas[aux]-niu02[aux]/areas[aux]));
 					aux++;
 
 					color[0] = color[0] + 10;
@@ -245,21 +241,23 @@ void detectobject(Mat &sourceImage,Mat &destinationImage)
 			cout << "Y: " <<i+1 << " = "<< sumaY[i] <<endl;
       cout<<"x testada "<<i+1<<" = "<<sumaX[i]/areas[i]<<endl;
       cout<<"y testada "<<i+1<<" = "<<sumaY[i]/areas[i]<<endl;
-			cout<<"miu20" <<i+1 <<" = "<< miu20[i]<<endl;
-			cout<<"miu02" <<i+1 <<" = "<< miu02[i]<<endl;
-			cout<<"miu11" <<i+1 <<" = "<< miu11[i]<<endl;
-			cout <<"phi1" <<i+1 << " = " << phi1[i] <<endl;
-			cout <<"phi2" <<i+1 << " = " << phi2[i] <<endl;
-
-
-      //prueba
-
-
+			cout<<"miu20 " <<i+1 <<" = "<< miu20[i]<<endl;
+			cout<<"miu02 " <<i+1 <<" = "<< miu02[i]<<endl;
+			cout<<"miu11 " <<i+1 <<" = "<< miu11[i]<<endl;
+			cout <<"phi1 " <<i+1 << " = " << phi1[i] <<endl;
+			cout <<"phi2 " <<i+1 << " = " << phi2[i] <<endl;
 			cout << "miu20 " << i+1 << " = "<< miu20[i] <<endl;
+      cout << "theta " << i+1 << " = "<< theta[i] * 180 / 3.14159265 <<endl;
 
 			Point p(centrox[i],centroy[i]);
-			circle(destinationImage, p ,5, Scalar(128,0,0),-1);
 
+      corrimientoX = (areas[i]/1000)*cos(theta[i] * 180 / 3.14159265);
+      corrimientoY = (areas[i]/1000)*sin(theta[i] * 180 / 3.14159265);
+
+      Point a(centrox[i]+corrimientoX,centroy[i]-corrimientoY);
+
+			circle(destinationImage, p ,5, Scalar(128,0,0),-1);
+      circle(destinationImage, a ,5, Scalar(0,128,0),-1);
       areas[i] = 0;
       sumaX[i] = 0;
       sumaY[i] = 0;
@@ -269,22 +267,14 @@ void detectobject(Mat &sourceImage,Mat &destinationImage)
 			sumaYcuadrada[i] = 0;
 			sumaXY[i] = 0;
 			miu20[i] = 0;
-
-
-
-		    	miu02[i] = 0;
-					miu11[i] = 0;
-					phi1[i] = 0;
-					phi2[i] = 0;
-
-
-
-
-
+    	miu02[i] = 0;
+			miu11[i] = 0;
+			phi1[i] = 0;
+			phi2[i] = 0;
+      theta[i] = 0;
 		}
     obj.cleanLinkedList();
 }
-
 bool fre = false;
 int main(int argc, char **argv)
 {
@@ -296,12 +286,10 @@ int main(int argc, char **argv)
   Mat currentImage;
   Mat YIQimage;
   Mat aux,aux1;
-
   //Mat local;
   //Mat HSV_convertido;
   //vector<Mat> hsv_planes;
   Mat sepYIQ, sepImage;
-
   Mat YIQrest;
   /* Clean the terminal */
   cout << "\033[2J\033[1;1H";
@@ -328,9 +316,7 @@ int main(int argc, char **argv)
     //flipImageBasic(currentImage, flippedImage);/* Call custom flipping routine. From OpenCV, you could call flip(currentImage, flippedImage, 1) */
     RGBtoYIQ(currentImage,YIQimage);//Transforma la imagén a YIQ
     binarizeChannel(YIQimage,YIQ[0]-dsv,YIQ[0]+dsv,YIQ[1]-dsv,YIQ[1]+dsv,YIQ[2]-dsv,YIQ[2]+dsv,sepYIQ);//Binarisa sobre los valores en los que se dio click YIQ
-
     //restore(currentImage,sepYIQ,YIQrest); //Crea una imagen con los colores originales y la imagen binarizada
-
     imshow("Original", currentImage);
     //aux = display2v(YIQimage,sepYIQ);
     //aux1 = display2v(YIQrest,Mat (YIQrest.rows,YIQrest.cols,YIQrest.type(),Scalar(0,0,0)));
@@ -338,24 +324,21 @@ int main(int argc, char **argv)
     imshow("YIQ",YIQimage);
 
 		for(int i=0; i<1000;i++)
-	{
-		for(int j=0; j<1000;j++)
-		{
-			esta[i][j]= true;
-		}
-	}
-
-	Mat binaryImage;
-	Mat auximage;
-	cvtColor( sepYIQ, auximage, CV_BGR2GRAY );
-	for ( int i = 1; i < 13; i = i + 4 ){ medianBlur ( auximage, auximage, i );}
-	threshold( auximage, binaryImage, 120, 255,THRESH_BINARY );
-	Mat detectionimage = Mat(binaryImage.rows,binaryImage.cols,currentImage.type());
-	detectionimage.setTo(Scalar(0,0,0));
-	detectobject(binaryImage,detectionimage);
-	imshow("detection",detectionimage);
-
-
+	  {
+  		for(int j=0; j<1000;j++)
+  		{
+  			esta[i][j]= true;
+  		}
+	  }
+  	Mat binaryImage;
+  	Mat auximage;
+  	cvtColor( sepYIQ, auximage, CV_BGR2GRAY );
+  	for ( int i = 1; i < 13; i = i + 4 ){ medianBlur ( auximage, auximage, i );}
+  	threshold( auximage, binaryImage, 120, 255,THRESH_BINARY );
+  	Mat detectionimage = Mat(binaryImage.rows,binaryImage.cols,currentImage.type());
+  	detectionimage.setTo(Scalar(0,0,0));
+  	detectobject(binaryImage,detectionimage);
+  	imshow("detection",detectionimage);
     /* If 'x' is pressed, exit program */
     char key = waitKey(1);
     if(key == 'x' || key == 27 ){ // 27 = ESC
@@ -430,7 +413,6 @@ void restore(const Mat &sourceImage, const Mat &binImage, Mat &destinationImage)
     }
   }
 }
-
 void mouseCoordinatesExampleCallback(int event, int x, int y, int flags, void* param)
 //Regresa los valores al arreglo de RGB y los muestra en consola
 {
