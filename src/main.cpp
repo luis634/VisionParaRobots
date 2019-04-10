@@ -44,6 +44,8 @@ const char KEY_TURN_RIGHT = 'e';
 const char KEY_EMERGENCY_STOP = 'f';
 const char KEY_HOVER = 'r';
 const char KEY_SEQUENCE = 'k';
+const char KEY_UP = 'u';
+const char KEY_DOWN = 'j';
 
 const String WINDOW_ORIGINAL_NAME = "Original";
 const String WINDOW_FLIPPED_NAME = "Flipped";
@@ -51,6 +53,33 @@ const String WINDOW_FLIPPED_NAME = "Flipped";
 
 Object objetos[100];
 long double phi1Test,phi2Test,thetaTest;
+
+void funcion_prueba(BebopDrone &drone) {
+  cout << "funcion prueba" << endl;
+  // Despegue
+  drone.takeoff();
+  usleep(3500000);
+  cout << "takeoff" << endl;
+
+  drone.hover();
+  usleep(2000000);
+  cout << "hover" << endl;
+
+  drone.setYaw(50);
+  usleep(1000000);
+  cout << "yaw" << endl;
+
+  drone.hover();
+  usleep(2000000);
+  cout << "hover2" << endl;
+
+  drone.setPitch(100);
+  usleep(1750000);
+  cout << "pitch" << endl;
+
+  drone.hover();
+}
+
 int main(int argc, char **argv)
 {
 
@@ -58,6 +87,8 @@ int main(int argc, char **argv)
   namedWindow(WINDOW_ORIGINAL_NAME);
   high_resolution_clock::time_point currentTime = high_resolution_clock::now();
   high_resolution_clock::time_point lastKeyPress = high_resolution_clock::now();
+  JoystickInterface joystick(1);
+  int var;
 
 	srand(time(NULL));
   VideoCapture camera = VideoCapture(0);
@@ -81,32 +112,105 @@ int main(int argc, char **argv)
   bool update = true; //enable camera update
 
 
-  while (true) {
+  // while (true) {
+  //
+  //   if (isCameraAvailable && update)
+  //    {
+  //     camera.read(currentImage);
+  //    }
+  //   if (currentImage.size().width <= 0 && currentImage.size().height <= 0) {
+  //     cout << "ERROR: Camera returned blank image, check connection\n";
+  //     break;
+  //   }
+  bool stop = false;
+  while (!stop) {
+    currentTime = high_resolution_clock::now();
 
-    if (isCameraAvailable && update)
-     {
-      camera.read(currentImage);
-     }
-    if (currentImage.size().width <= 0 && currentImage.size().height <= 0) {
-      cout << "ERROR: Camera returned blank image, check connection\n";
+    currentImage = drone.getFrameAsMat();
+    imshow(WINDOW_ORIGINAL_NAME, currentImage);
+
+    char key = tolower(cv::waitKey(16));
+
+    if (key == KEY_STOP_PROGRAM) {
       break;
     }
+    if (key != -1) {
+      lastKeyPress = high_resolution_clock::now();
+    }
 
+    if (joystick.isConnected()) {
+      int yawOutput = DRONE_OUTPUT * joystick.getAxisValue(3);
+      int rollOutput = DRONE_OUTPUT * joystick.getAxisValue(0);
+      int pitchOutput = DRONE_OUTPUT * joystick.getAxisValue(1) * -1;
+      int verticalSpeedOutput = DRONE_OUTPUT * joystick.getAxisValue(4) * -1;
 
-   // while (true)
-   // {
-   //
-   //  if (update)
-   //  {
-   //    currentTime = high_resolution_clock::now();
-   //    currentImage = drone.getFrameAsMat();
-   //    imshow(WINDOW_ORIGINAL_NAME, currentImage);
-   //
-   //  }
+      if (((yawOutput == 0 && rollOutput == 0) && pitchOutput == 0)) {
+        drone.hover();
+      } else {
+        drone.setYawRollPitchVSpeed(yawOutput, rollOutput, pitchOutput,
+                                    verticalSpeedOutput);
+      }
 
-    // Clear the console
-    //cout << "Battery Level: " << drone.getBatteryLevel() << endl;
+      if (joystick.getButtonState(0)) {
+        drone.takeoff();
+      } else if (joystick.getButtonState(1)) {
+        drone.land();
+      } else if (joystick.getButtonState(3)) {
+        drone.emergencyStop();
+      } else if (joystick.getButtonState(2)) {
+        funcion_prueba(drone);
+      }
 
+    } else {
+      // Keyboard control
+      switch (key) {
+        case KEY_TAKEOFF:
+          drone.takeoff();
+          break;
+        case KEY_LAND:
+          drone.land();
+          break;
+        case KEY_MOVE_FORWARD:
+          drone.setPitch(DRONE_OUTPUT);
+          break;
+        case KEY_MOVE_BACK:
+          drone.setPitch(-DRONE_OUTPUT);
+          break;
+        case KEY_MOVE_LEFT:
+          drone.setRoll(-DRONE_OUTPUT);
+          break;
+        case KEY_MOVE_RIGHT:
+          drone.setRoll(DRONE_OUTPUT);
+          break;
+        case KEY_TURN_LEFT:
+          drone.setYaw(-DRONE_OUTPUT);
+          break;
+        case KEY_TURN_RIGHT:
+          drone.setYaw(DRONE_OUTPUT);
+          break;
+        case KEY_EMERGENCY_STOP:
+          drone.emergencyStop();
+          break;
+        case KEY_HOVER:
+          drone.hover();
+          break;
+        case KEY_UP:
+          drone.setVerticalSpeed(DRONE_OUTPUT);
+        case KEY_DOWN:
+          drone.setVerticalSpeed(-DRONE_OUTPUT);
+        case KEY_SEQUENCE:
+          //funcion_prueba(drone);
+          break;
+        default:
+          // If key delay has passed and no new keys have been pressed stop
+          // drone
+          duration<double, std::milli> time_span = currentTime - lastKeyPress;
+          if (time_span.count() > KEY_DELAY_MS) {
+            drone.hover();
+          }
+          break;
+      }
+    }
     RGBtoYIQ(currentImage,YIQimage);//Transforma la imagén a YIQ
     binarizeChannel(YIQimage,YIQ[0]-dsv,YIQ[0]+dsv,YIQ[1]-dsv,YIQ[1]+dsv,YIQ[2]-dsv,YIQ[2]+dsv,sepYIQ);//Binarisa sobre los valores en los que se dio click YIQ
     imshow("Original", currentImage);
@@ -136,19 +240,31 @@ int main(int argc, char **argv)
 
       if( phi1Test < arrPhi1[0]+3*stdPhi1[0] && phi1Test > arrPhi1[0]-3*stdPhi1[0] && phi2Test < arrPhi2[0]+3*stdPhi2[0] && phi2Test > arrPhi2[0]-3*stdPhi2[0]){
         //objeto1 Espada
-        cout<<"Espadin"<<endl;
+        cout<<"Espadin Derecha"<<endl;
+        if(thetaTest > 0){
+          cout<<"Sube"<< thetaTest<<endl;
+        }else
+        {
+          cout<<"Baja"<< thetaTest<<endl;
+        }
       }
       else if(phi1Test < arrPhi1[1]+3*stdPhi1[1] && phi1Test > arrPhi1[1]-3*stdPhi1[1] && phi2Test < arrPhi2[1]+3*stdPhi2[1] && phi2Test > arrPhi2[1]-3*stdPhi2[1]){
         //objeto2 Casco
-        cout<<"Cascadin"<<endl;
+        cout<<"Casquin Delante"<<endl;
       }
       else if(phi1Test < arrPhi1[2]+3*stdPhi1[2] && phi1Test > arrPhi1[2]-3*stdPhi1[2] && phi2Test < arrPhi2[2]+3*stdPhi2[2] && phi2Test > arrPhi2[2]-3*stdPhi2[2]){
         //objeto3 Hacha
-        cout<<"Hachin"<<endl;
+        cout<<"Hachin Izquierda"<<endl;
+        if(thetaTest > 0){
+          cout<<"Sube"<< thetaTest<<endl;
+        }else
+        {
+          cout<<"Baja"<< thetaTest<<endl;
+        }
       }
       else if(phi1Test < arrPhi1[3]+3*stdPhi1[3] && phi1Test > arrPhi1[3]-3*stdPhi1[3] && phi2Test < arrPhi2[3]+3*stdPhi2[3] && phi2Test > arrPhi2[3]-3*stdPhi2[3]){
         //objeto4 Escudo
-        cout<<"Escudin"<<endl;
+        cout<<"Escudin Atras"<<endl;
       }
 
 
@@ -156,13 +272,13 @@ int main(int argc, char **argv)
     cout<<objetos[0].getPhi1()<<endl;
     cout<<objetos[0].getPhi2()<<endl;
     cout<<objetos[0].getTheta()<<endl;
-    char key = waitKey(3);
-    if(key == 'x' || key == 27 )
-    { // 27 = ESC
-      break;
-    } else if(key == ' ')
-    { // if 32=Space is pressed, freeze image
-      update = !update;
-    }
+    //char key = waitKey(3);
+    //if(key == 'x' || key == 27 )
+    // { // 27 = ESC
+    //   break;
+    // } else if(key == ' ')
+    // { // if 32=Space is pressed, freeze image
+    //   update = !update;
+    // }
   }
 }
