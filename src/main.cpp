@@ -14,11 +14,19 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "object.h"
 #include "segmentation.h"
 #include "color.h"
+
 using namespace cv;
 using namespace std;
 using namespace std::chrono;
+//Constantes Figuras
+const long double arrPhi1[4]={0.3288777,0.2407369,0.2054008,0.1659098};
+const long double arrPhi2[4]={0.074311,0.0107755,0.0010336,0.0006762};
+const long double stdPhi1[4]={0.004461183,0.004096511,0.001597802,0.000245853};
+const long double stdPhi2[4]={0.002389544,0.001390904,0.001208792,0.000099343};
+
 
 //Variables drone
 const int KEY_DELAY_MS = 50;
@@ -41,6 +49,8 @@ const String WINDOW_ORIGINAL_NAME = "Original";
 const String WINDOW_FLIPPED_NAME = "Flipped";
 //Variables drone
 
+Object objetos[100];
+long double phi1Test,phi2Test,thetaTest;
 int main(int argc, char **argv)
 {
 
@@ -117,10 +127,35 @@ int main(int argc, char **argv)
   	threshold( auximage, binaryImage, 120, 255,THRESH_BINARY );
   	Mat detectionimage = Mat(binaryImage.rows,binaryImage.cols,currentImage.type());
   	detectionimage.setTo(Scalar(0,0,0));
-  	detectobject(binaryImage,detectionimage);
+  	detectobject(binaryImage,detectionimage,objetos);
   	imshow("detection",detectionimage);
+    for (int j = 0; j<10;j++){
+      phi1Test=objetos[j].getPhi1();
+      phi2Test=objetos[j].getPhi2();
+      thetaTest=objetos[j].getTheta();
+
+      if( phi1Test < arrPhi1[0]+3*stdPhi1[0] && phi1Test > arrPhi1[0]-3*stdPhi1[0] && phi2Test < arrPhi2[0]+3*stdPhi2[0] && phi2Test > arrPhi2[0]-3*stdPhi2[0]){
+        //objeto1 Espada
+        cout<<"Espadin"<<endl;
+      }
+      else if(phi1Test < arrPhi1[1]+3*stdPhi1[1] && phi1Test > arrPhi1[1]-3*stdPhi1[1] && phi2Test < arrPhi2[1]+3*stdPhi2[1] && phi2Test > arrPhi2[1]-3*stdPhi2[1]){
+        //objeto2 Casco
+        cout<<"Cascadin"<<endl;
+      }
+      else if(phi1Test < arrPhi1[2]+3*stdPhi1[2] && phi1Test > arrPhi1[2]-3*stdPhi1[2] && phi2Test < arrPhi2[2]+3*stdPhi2[2] && phi2Test > arrPhi2[2]-3*stdPhi2[2]){
+        //objeto3 Hacha
+        cout<<"Hachin"<<endl;
+      }
+      else if(phi1Test < arrPhi1[3]+3*stdPhi1[3] && phi1Test > arrPhi1[3]-3*stdPhi1[3] && phi2Test < arrPhi2[3]+3*stdPhi2[3] && phi2Test > arrPhi2[3]-3*stdPhi2[3]){
+        //objeto4 Escudo
+        cout<<"Escudin"<<endl;
+      }
 
 
+    }
+    cout<<objetos[0].getPhi1()<<endl;
+    cout<<objetos[0].getPhi2()<<endl;
+    cout<<objetos[0].getTheta()<<endl;
     char key = waitKey(3);
     if(key == 'x' || key == 27 )
     { // 27 = ESC

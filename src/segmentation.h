@@ -76,7 +76,7 @@ class list
 };
 //////////////////###############END LINKED LIST#####################
 list obj;
-void detectobject(Mat &sourceImage,Mat &destinationImage)
+void detectobject(Mat &sourceImage,Mat &destinationImage,Object* objetos)
 {
 	int i,j;
 	int color[3]={30,30,30};
@@ -211,18 +211,18 @@ void detectobject(Mat &sourceImage,Mat &destinationImage)
 		for(int i=0; i<aux;i++)
 		{
 
-			cout<<"objeto "<<i+1<<" = "<<areas[i]<<endl;
-			cout << "X: " <<i+1 << " = "<< sumaX[i] <<endl;
-			cout << "Y: " <<i+1 << " = "<< sumaY[i] <<endl;
-      cout<<"x testada "<<i+1<<" = "<<sumaX[i]/areas[i]<<endl;
-      cout<<"y testada "<<i+1<<" = "<<sumaY[i]/areas[i]<<endl;
-			cout<<"miu20 " <<i+1 <<" = "<< miu20[i]<<endl;
-			cout<<"miu02 " <<i+1 <<" = "<< miu02[i]<<endl;
-			cout<<"miu11 " <<i+1 <<" = "<< miu11[i]<<endl;
-			cout <<"phi1 " <<i+1 << " = " << phi1[i] <<endl;
-			cout <<"phi2 " <<i+1 << " = " << phi2[i] <<endl;
-			cout << "miu20 " << i+1 << " = "<< miu20[i] <<endl;
-      cout << "theta " << i+1 << " = "<< theta[i] * 180 / 3.14159265 <<endl;
+			// cout<<"objeto "<<i+1<<" = "<<areas[i]<<endl;
+			// cout << "X: " <<i+1 << " = "<< sumaX[i] <<endl;
+			// cout << "Y: " <<i+1 << " = "<< sumaY[i] <<endl;
+      // cout<<"x testada "<<i+1<<" = "<<sumaX[i]/areas[i]<<endl;
+      // cout<<"y testada "<<i+1<<" = "<<sumaY[i]/areas[i]<<endl;
+			// cout<<"miu20 " <<i+1 <<" = "<< miu20[i]<<endl;
+			// cout<<"miu02 " <<i+1 <<" = "<< miu02[i]<<endl;
+			// cout<<"miu11 " <<i+1 <<" = "<< miu11[i]<<endl;
+			// cout <<"phi1 " <<i+1 << " = " << phi1[i] <<endl;
+			// cout <<"phi2 " <<i+1 << " = " << phi2[i] <<endl;
+			// cout << "miu20 " << i+1 << " = "<< miu20[i] <<endl;
+      // cout << "theta " << i+1 << " = "<< theta[i] * 180 / 3.14159265 <<endl;
 
 			Point p(centrox[i],centroy[i]);
 
@@ -236,6 +236,10 @@ void detectobject(Mat &sourceImage,Mat &destinationImage)
       circle(destinationImage, b ,5, Scalar(0,0,128),-1);
       line(destinationImage,p,a,Scalar(128,128,128),1,1);
       line(destinationImage,p,b,Scalar(128,128,128),1,1);
+
+      objetos[i].setTheta(theta[i] * 180 / 3.14159265);
+      objetos[i].setPhi2(phi2[i]);
+      objetos[i].setPhi1(phi1[i]);
 
       areas[i] = 0;
       sumaX[i] = 0;

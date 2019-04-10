@@ -5,7 +5,7 @@ void restore(const Mat &sourceImage,const Mat &binImage, Mat &destinationImage);
 void binarizeChannel(const Mat &sourceImage, int blowValue, int bhighValue,int glowValue, int ghighValue,int rlowValue, int rhighValue, Mat &destinationImage);
 Mat display2(const Mat &mat_1, const Mat &mat_2);
 Mat display2v(const Mat &mat_1, const Mat &mat_2);
-
+  
 vector<Point> points;//Se guardan los puntos donde se hace click
 int RGB[3];//Se guardan los valores BGR del punto donde se da click
 int YIQ[3];//Se guardan los valores YIQ del punto donde se da click
