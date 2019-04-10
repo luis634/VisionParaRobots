@@ -3,6 +3,11 @@
 #include <opencv2/highgui/highgui.hpp>
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
+#include <thread>
+#include "BebopController/BebopDrone.hpp"
+#include "Joystick/JoystickInterface.hpp"
+#include <chrono>
+#include <ctime>
 #include <iostream>
 #include <string.h>
 #include <cmath>
@@ -12,6 +17,32 @@
 
 using namespace cv;
 using namespace std;
+using namespace std::chrono;
+
+//Variables drone
+
+const int KEY_DELAY_MS = 50;
+const int DRONE_OUTPUT = 70;
+
+const char KEY_STOP_PROGRAM = 'x';
+const char KEY_TAKEOFF = 'o';
+const char KEY_LAND = 'p';
+const char KEY_MOVE_FORWARD = 'w';
+const char KEY_MOVE_BACK = 's';
+const char KEY_MOVE_LEFT = 'a';
+const char KEY_MOVE_RIGHT = 'd';
+const char KEY_TURN_LEFT = 'q';
+const char KEY_TURN_RIGHT = 'e';
+const char KEY_EMERGENCY_STOP = 'f';
+const char KEY_HOVER = 'r';
+const char KEY_SEQUENCE = 'k';
+
+const String WINDOW_ORIGINAL_NAME = "Original";
+const String WINDOW_FLIPPED_NAME = "Flipped";
+
+//Variables drone
+
+
 const int max_value_H = 360/2;
 const int max_value = 255;
 const String window_capture_name = "Video Capture";
@@ -53,7 +84,7 @@ Mat display2v(const Mat &mat_1, const Mat &mat_2);
 vector<Point> points;//Se guardan los puntos donde se hace click
 int RGB[3];//Se guardan los valores BGR del punto donde se da click
 int YIQ[3];//Se guardan los valores YIQ del punto donde se da click
-const int dsv = 25;
+const int dsv = 35;
 
 struct Nodo {
    int x1;
@@ -223,7 +254,9 @@ void detectobject(Mat &sourceImage,Mat &destinationImage)
 					phi1[aux] = niu20[aux] + niu02[aux];
 					phi2[aux] = pow(niu20[aux] - niu02[aux],2) + 4 *pow(niu11[aux],2);
 
-          theta[aux] = 0.5 * atan((2*(niu11[aux]/areas[aux]))/(niu20[aux]/areas[aux]-niu02[aux]/areas[aux]));
+         // theta[aux] = 0.5 * atan((2*(niu11[aux]/areas[aux]))/(niu20[aux]/areas[aux]-niu02[aux]/areas[aux]));
+
+         theta[aux] = 0.5 * atan2(2 * niu11[aux], niu20[aux] - niu02[aux]);
 					aux++;
 
 					color[0] = color[0] + 10;
@@ -233,6 +266,7 @@ void detectobject(Mat &sourceImage,Mat &destinationImage)
 			}
 		}
 		cout<<"numero de objetos = "<<aux<<endl;
+
 		for(int i=0; i<aux;i++)
 		{
 
@@ -277,26 +311,27 @@ void detectobject(Mat &sourceImage,Mat &destinationImage)
 		}
     obj.cleanLinkedList();
 }
-bool fre = false;
 int main(int argc, char **argv)
 {
-	srand(time(NULL)); //seed for random colors
-  /* First, open camera device */
-  VideoCapture camera = VideoCapture(0);
-  bool isCameraAvailable = camera.isOpened();
-  /* Create images where captured and transformed frames are going to be stored*/
+
+  BebopDrone &drone = BebopDrone::getInstance();
+  namedWindow(WINDOW_ORIGINAL_NAME);
+  high_resolution_clock::time_point currentTime = high_resolution_clock::now();
+  high_resolution_clock::time_point lastKeyPress = high_resolution_clock::now();
+
+	srand(time(NULL)); 
+  //VideoCapture camera = VideoCapture(0);
+  //bool isCameraAvailable = camera.isOpened();
+
   Mat currentImage;
   Mat YIQimage;
   Mat aux,aux1;
-  //Mat local;
-  //Mat HSV_convertido;
-  //vector<Mat> hsv_planes;
   Mat sepYIQ, sepImage;
   Mat YIQrest;
-  /* Clean the terminal */
+
   cout << "\033[2J\033[1;1H";
   cout << "Basic Show Image \t|\tUse 'x' or 'Esc' to terminate execution\nUse space to freeze\n";
-  /* Create main OpenCV window to attach callbacks */
+
   namedWindow("Original");
   namedWindow("YIQ");
 
@@ -304,25 +339,37 @@ int main(int argc, char **argv)
   setMouseCallback("YIQ",mouseCallbackYIQ, &YIQimage);
 
   bool update = true; //enable camera update
+ 
+  /*
   while (true) {
-    /* Obtain a new frame from camera */
-    if (isCameraAvailable && update) {
+    
+    if (isCameraAvailable && update)
+     {
       camera.read(currentImage);
-    } /*else {
-      currentImage = imread("PlaceholderImage.jpg", CV_LOAD_IMAGE_COLOR);
-    }*/
+     } 
     if (currentImage.size().width <= 0 && currentImage.size().height <= 0) {
       cout << "ERROR: Camera returned blank image, check connection\n";
       break;
     }
-    //flipImageBasic(currentImage, flippedImage);/* Call custom flipping routine. From OpenCV, you could call flip(currentImage, flippedImage, 1) */
+    */
+
+   while (true) 
+   {
+
+    if (update)
+    {
+      currentTime = high_resolution_clock::now();
+      currentImage = drone.getFrameAsMat();
+      imshow(WINDOW_ORIGINAL_NAME, currentImage);
+
+    }
+
+    // Clear the console
+    //cout << "Battery Level: " << drone.getBatteryLevel() << endl;
+
     RGBtoYIQ(currentImage,YIQimage);//Transforma la imagén a YIQ
     binarizeChannel(YIQimage,YIQ[0]-dsv,YIQ[0]+dsv,YIQ[1]-dsv,YIQ[1]+dsv,YIQ[2]-dsv,YIQ[2]+dsv,sepYIQ);//Binarisa sobre los valores en los que se dio click YIQ
-    //restore(currentImage,sepYIQ,YIQrest); //Crea una imagen con los colores originales y la imagen binarizada
     imshow("Original", currentImage);
-    //aux = display2v(YIQimage,sepYIQ);
-    //aux1 = display2v(YIQrest,Mat (YIQrest.rows,YIQrest.cols,YIQrest.type(),Scalar(0,0,0)));
-    //imshow("YIQ",display2(aux,aux1));
     imshow("YIQ",YIQimage);
 
 		for(int i=0; i<1000;i++)
@@ -332,24 +379,28 @@ int main(int argc, char **argv)
   			esta[i][j]= true;
   		}
 	  }
+
   	Mat binaryImage;
   	Mat auximage;
-  	cvtColor( sepYIQ, auximage, CV_BGR2GRAY );
+  	cvtColor( sepYIQ, auximage, CV_BGR2GRAY);
   	for ( int i = 1; i < 13; i = i + 4 ){ medianBlur ( auximage, auximage, i );}
   	threshold( auximage, binaryImage, 120, 255,THRESH_BINARY );
   	Mat detectionimage = Mat(binaryImage.rows,binaryImage.cols,currentImage.type());
   	detectionimage.setTo(Scalar(0,0,0));
   	detectobject(binaryImage,detectionimage);
   	imshow("detection",detectionimage);
-    /* If 'x' is pressed, exit program */
-    char key = waitKey(1);
-    if(key == 'x' || key == 27 ){ // 27 = ESC
+    
+
+    char key = waitKey(3);
+    if(key == 'x' || key == 27 )
+    { // 27 = ESC
       break;
-    } else if(key == 32){ // if 32=Space is pressed, freeze image
+    } else if(key == ' ')
+    { // if 32=Space is pressed, freeze image
       update = !update;
     }
   }
-	// im_in = imread("/home/diego96/Pictures/Webcam/prueba21.jpg", CV_LOAD_IMAGE_COLOR);
+ 
 }
 void RGBtoYIQ(const Mat &sourceImage, Mat &destinationImage)
 //Convierte de RGB a YIQ
@@ -454,6 +505,34 @@ void mouseCallbackYIQ(int event, int x, int y, int flags, void* param)
           break;
   }
 }
+
+/*
+void funcion_prueba(BebopDrone &drone) {
+  cout << "funcion prueba" << endl;
+  // Despegue
+  drone.takeoff();
+  usleep(3500000);
+  cout << "takeoff" << endl;
+
+  drone.hover();
+  usleep(2000000);
+  cout << "hover" << endl;
+
+  drone.setYaw(50);
+  usleep(1000000);
+  cout << "yaw" << endl;
+
+  drone.hover();
+  usleep(2000000);
+  cout << "hover2" << endl;
+
+  drone.setPitch(100);
+  usleep(1750000);
+  cout << "pitch" << endl;
+
+  drone.hover();
+}
+*/
 
 Mat display2(const Mat &mat_1, const Mat &mat_2)
 //Une dos imagenes del mismo tamaño horizontalmente
