@@ -90,9 +90,9 @@ void detectobject(Mat &sourceImage,Mat &destinationImage,Object* objetos)
 	Scalar_<uint8_t> bgrPixel2;
   struct Nodo* ptr;
 	//RECORRES LA IMAGEN
-		for (int x = 1; x<sourceImage.rows;x=x+100)
+		for (int x = 1; x<sourceImage.rows;x=x+20)
 		{
-			for(int y = 1; y<sourceImage.cols;y=y+100)
+			for(int y = 1; y<sourceImage.cols;y=y+20)
 			{
 				//Input image PARA QUE ME DE EL VALOR DEL PIXEL
 				bgrPixel.val[0] = pixelPtr[x*sourceImage.cols*cn + y*cn + 0];
@@ -201,16 +201,15 @@ void detectobject(Mat &sourceImage,Mat &destinationImage,Object* objetos)
 					aux++;
 
 					color[0] = color[0] + 10;
-					color[1] = color[1] + 40;
-					color[2] = color[2] + 60;
+					color[1] = color[1] + 20;
+					color[2] = color[2] + 30;
 				}
 			}
 		}
-		cout<<"numero de objetos = "<<aux<<endl;
-
+		cout<<aux<<endl;
+    cout << ("\033[2J\033[1;1H");
 		for(int i=0; i<aux;i++)
 		{
-
 			// cout<<"objeto "<<i+1<<" = "<<areas[i]<<endl;
 			// cout << "X: " <<i+1 << " = "<< sumaX[i] <<endl;
 			// cout << "Y: " <<i+1 << " = "<< sumaY[i] <<endl;
@@ -244,17 +243,17 @@ void detectobject(Mat &sourceImage,Mat &destinationImage,Object* objetos)
       areas[i] = 0;
       sumaX[i] = 0;
       sumaY[i] = 0;
-			centrox[i] = 0;
-			centroy[i] = 0;
+			// centrox[i] = 0;
+			// centroy[i] = 0;
 			sumaXcuadrada[i] = 0;
 			sumaYcuadrada[i] = 0;
 			sumaXY[i] = 0;
-			miu20[i] = 0;
-    	miu02[i] = 0;
-			miu11[i] = 0;
-			phi1[i] = 0;
-			phi2[i] = 0;
-      theta[i] = 0;
+			// miu20[i] = 0;
+    	// miu02[i] = 0;
+			// miu11[i] = 0;
+			// phi1[i] = 0;
+			// phi2[i] = 0;
+      // theta[i] = 0;
 		}
     obj.cleanLinkedList();
 }
