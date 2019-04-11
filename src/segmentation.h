@@ -206,8 +206,8 @@ void detectobject(Mat &sourceImage,Mat &destinationImage,Object* objetos)
 				}
 			}
 		}
-		cout<<aux<<endl;
-    cout << ("\033[2J\033[1;1H");
+		cout<< "numero de objetos" <<aux<<endl;
+
 		for(int i=0; i<aux;i++)
 		{
 			// cout<<"objeto "<<i+1<<" = "<<areas[i]<<endl;
