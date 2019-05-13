@@ -56,6 +56,8 @@ const String WINDOW_FLIPPED_NAME = "Flipped";
 Object objetos[100];
 long double phi1Test,phi2Test,thetaTest;
 
+Mat izqCen,izqAtr,derCen,derAtr;
+
 // void funcion_prueba(BebopDrone &drone) {
 //   cout << "funcion prueba" << endl;
 //   // Despegue
@@ -82,49 +84,77 @@ long double phi1Test,phi2Test,thetaTest;
 //   drone.hover();
 // }
 void funcion_prueba(BebopDrone &drone) {
-  bool atras,derecha= false;
+  bool atras,derecha= true;
   int subebaja = subBaj;
   atras = adeAtr;
   derecha = izqDer;
 
   cout << "funcion prueba" << endl;
+
+  //Movimiento Vertical
   drone.hover();
   usleep(2000000);
-  cout << "hover" << endl;
+  drone.setVerticalSpeed(subebaja);
+  usleep(1000000);
+
+  drone.hover();
+  usleep(2000000);
 
   if (derecha){
   drone.setRoll(50);
-  usleep(750000);
-  cout << "roll" << endl;
+  usleep(1250000);
   }else{
   drone.setRoll(-50);
-  usleep(750000);
-  cout << "roll" << endl;
+  usleep(1250000);
   }
 
   drone.hover();
   usleep(2000000);
-  cout << "hover2" << endl;
 
   if (atras){
-  drone.setPitch(-100);
-  usleep(750000);
-  cout << "pitch" << endl;
+    drone.setPitch(-150);
+    usleep(1400000);
+    drone.hover();
+    usleep(1500000);
+    drone.setPitch(-150);
+    usleep(1200000);
   }else{
-  drone.setPitch(100);
-  usleep(750000);
-  cout << "pitch" << endl;
+    drone.setPitch(-150);
+    usleep(1300000);
   }
 
   drone.hover();
   usleep(2000000);
-  cout << "hover2" << endl;
 
-  drone.setVerticalSpeed(subebaja);
-  usleep(500000);
-  cout << "vertical" << endl;
+  if (derecha){
+  drone.setRoll(-50);
+  usleep(1250000);
+  }else{
+  drone.setRoll(50);
+  usleep(1250000);
+  }
 
   drone.hover();
+  usleep(1000000);
+
+  drone.land();
+  if(derecha){
+    if (atras){
+      imshow("Ruta",derAtr);
+    }
+    else{
+      imshow("Ruta",derCen);
+    }
+  }
+  else{
+    if (atras){
+      imshow("Ruta",izqAtr);
+    }
+    else{
+      imshow("Ruta",izqCen);
+    }
+  }
+
 }
 
 void dibujaPhis(Mat &destinationImage, Object object[]){
@@ -139,7 +169,6 @@ void dibujaPhis(Mat &destinationImage, Object object[]){
 
 int main(int argc, char **argv)
 {
-
 
   BebopDrone &drone = BebopDrone::getInstance();
   namedWindow(WINDOW_ORIGINAL_NAME);
@@ -163,6 +192,11 @@ int main(int argc, char **argv)
   namedWindow("YIQ");
   //setMouseCallback("Original", mouseCoordinatesExampleCallback, &currentImage);
   setMouseCallback("YIQ",mouseCallbackYIQ, &YIQimage);
+
+  izqCen = imread("IzqCen.png",CV_LOAD_IMAGE_COLOR);
+  izqAtr = imread("IzqAtr.png",CV_LOAD_IMAGE_COLOR);
+  derAtr = imread("DerAtr.png",CV_LOAD_IMAGE_COLOR);
+  derCen = imread("DerCen.png",CV_LOAD_IMAGE_COLOR);
 
   bool update = true; //enable camera update
 

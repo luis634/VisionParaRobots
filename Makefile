@@ -10,6 +10,10 @@ all: dirs $(OBJS)
 	@echo Linking everything together...
 	@g++ $(OBJS) -o $(TARGETDIR)/main $(LCCLIBS) $(LXXLIBS)
 	@cp Momentos.jpg ../bin
+	@cp IzqCen.png ../bin
+	@cp IzqAtr.png ../bin
+	@cp DerCen.png ../bin
+	@cp DerAtr.png ../bin
 	@echo Done
 
 dirs:
